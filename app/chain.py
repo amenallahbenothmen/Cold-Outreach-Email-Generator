@@ -6,11 +6,10 @@ from utils import get_github_readme_raw_link, get_user_projects, register_data_i
 import chromadb
 
 def process_job_posting(job_posting_url, env_vars):
-    # Load the job posting content
+
     loader = WebBaseLoader(job_posting_url)
     page_data = loader.load().pop().page_content
 
-    # Define the prompt for extracting job details
     prompt = PromptTemplate.from_template(
         """
         ### SCRAPED TEXT FROM WEBSITE:
@@ -32,29 +31,26 @@ def process_job_posting(job_posting_url, env_vars):
         """
     )
 
-    # Initialize the language model client with the API key
     llm = ChatGroq(
         temperature=0, 
         groq_api_key=env_vars['GROQ_API_KEY'], 
         model_name="llama-3.1-70b-versatile"
     )
 
-    # Generate the response
     chain_extract = prompt | llm 
     res = chain_extract.invoke(input={'page_data': page_data})
 
-    # Parse the JSON output
     json_parser = JsonOutputParser()
     job_offer = json_parser.parse(res.content)
     return job_offer
 
 def process_user_profile(github_username, env_vars):
-    # Process GitHub README
+
     readme_url = get_github_readme_raw_link(github_username)
     loader = WebBaseLoader(readme_url)
     page_data = loader.load().pop().page_content
 
-    # Define the prompt for extracting user details
+
     prompt = PromptTemplate.from_template(
         """
         ### SCRAPED TEXT FROM GITHUB README:
@@ -82,25 +78,25 @@ def process_user_profile(github_username, env_vars):
         """
     )
 
-    # Initialize the language model client
+
     llm = ChatGroq(
         temperature=0, 
         groq_api_key=env_vars['GROQ_API_KEY'], 
         model_name="llama-3.1-70b-versatile"
     )
 
-    # Generate the response
+
     chain_extract = prompt | llm 
     res = chain_extract.invoke(input={'page_data': page_data})
 
-    # Parse the JSON output
+
     json_parser = JsonOutputParser()
     readme_data = json_parser.parse(res.content)
 
-    # Process GitHub projects
+ 
     projects = get_user_projects(github_username, env_vars['GITHUB_TOKEN'], llm)
 
-    # Register data in ChromaDB
+    
     client = chromadb.Client()
     collection = client.create_collection(name='user_data_collection')
 
@@ -118,17 +114,17 @@ def generate_application_letter(job_offer, user_data, env_vars):
     job_requirements = "; ".join(job_offer.get("requirements", []))
     job_responsibilities = job_offer.get("responsibilities", "N/A")
 
-    # Query the database for relevant projects
+    
     query_results = query_for_application_letter(job_title, job_requirements, job_responsibilities, user_data['collection'])
 
-    # Initialize the language model client
+
     llm = ChatGroq(
         temperature=0, 
         groq_api_key=env_vars['GROQ_API_KEY'], 
         model_name="llama-3.1-70b-versatile"
     )
 
-    # Generate the application letter
+  
     prompt_template = PromptTemplate.from_template(
         """
         ### JOB AND USER INFORMATION:
@@ -145,12 +141,12 @@ def generate_application_letter(job_offer, user_data, env_vars):
         """
     )
 
-    # Format the relevant projects
+
     relevant_projects = "\n".join(
         [f"- {meta.get('project_name', 'N/A')}: {doc}" for doc, meta in zip(query_results['documents'][0], query_results['metadatas'][0])]
     )
 
-    # Generate the letter
+
     chain = prompt_template | llm
     result = chain.invoke(input={
         'job_title': job_title,

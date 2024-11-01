@@ -1,21 +1,8 @@
-# Environment management
-python-dotenv==1.0.1
-
-# Language models and transformers
-transformers==4.46.1
-langchain-groq==0.2.0
-langchain-community==0.3.3
+streamlit==1.39.0
 langchain-core==0.3.13
-langchain==0.3.5
-
-# Web scraping
-bs4==0.0.1  # BeautifulSoup4 wrapper
-
-# GitHub API requests
-requests==2.32.3
-
-# Database for embeddings (ChromaDB)
+langchain-community==0.3.3
+langchain-groq==0.2.0
 chromadb==0.5.16
-
-# Other dependencies
-aiohttp==3.10.10  # Used by ChromaDB
+requests==2.32.3
+python-dotenv==1.0.1
+beautifulsoup4==4.12.3

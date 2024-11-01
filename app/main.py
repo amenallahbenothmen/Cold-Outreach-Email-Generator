@@ -2,7 +2,7 @@ import streamlit as st
 from chain import process_job_posting, process_user_profile, generate_application_letter
 from utils import load_environment_variables
 
-# Set page configuration
+
 st.set_page_config(
     page_title="Indeed Job Application Letter Generator",
     page_icon="📝",

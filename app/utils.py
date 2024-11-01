@@ -4,17 +4,16 @@ import requests
 from langchain_core.prompts import PromptTemplate
 
 def load_environment_variables():
-    # Locate and load the .env file
+
     dotenv_path = find_dotenv()
     if not dotenv_path:
         raise FileNotFoundError("Could not find .env file.")
     load_dotenv(dotenv_path)
 
-    # Retrieve environment variables
     github_token = os.getenv("GITHUB_TOKEN")
     groq_api_key = os.getenv("GROQ_API_KEY")
 
-    # Check if the variables are loaded
+
     if not github_token:
         raise ValueError("GITHUB_TOKEN is not set in the environment variables.")
     if not groq_api_key:
@@ -25,8 +24,6 @@ def load_environment_variables():
         'GROQ_API_KEY': groq_api_key
     }
 
-    # For debugging purposes
-    # print(f"Environment variables loaded: {env_vars}")
 
     return env_vars
 
@@ -37,18 +34,18 @@ def get_project_content(username, repo_name, token):
     headers = {"Authorization": f"token {token}"}
     contents_url = f"https://api.github.com/repos/{username}/{repo_name}/contents"
 
-    # Initialize content variables
+
     requirements_content = None
     readme_content = None
 
-    # Check for requirements.txt
+
     requirements_response = requests.get(f"{contents_url}/requirements.txt", headers=headers)
     if requirements_response.status_code == 200:
         download_url = requirements_response.json().get("download_url")
         if download_url:
             requirements_content = requests.get(download_url).text
 
-    # Check for README.md
+
     readme_response = requests.get(f"{contents_url}/README.md", headers=headers)
     if readme_response.status_code == 200:
         download_url = readme_response.json().get("download_url")
@@ -137,7 +134,7 @@ def get_user_projects(username, token, llm):
     return projects
 
 def register_data_in_chromadb(collection, readme_data, projects):
-    # Register README data
+
     role_str = ", ".join(readme_data['role']) if isinstance(readme_data['role'], list) else readme_data['role']
     skills_str = ", ".join(readme_data['skills']) if isinstance(readme_data['skills'], list) else readme_data['skills']
     collection.add(
@@ -151,7 +148,7 @@ def register_data_in_chromadb(collection, readme_data, projects):
             "skills": skills_str
         }
     )
-    # Register projects data
+
     for project in projects:
         main_technologies_str = ", ".join(project["Main Technologies"]) if isinstance(project["Main Technologies"], list) else project["Main Technologies"]
         collection.add(
